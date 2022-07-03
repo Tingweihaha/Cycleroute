@@ -1,0 +1,248 @@
+---
+title: "grp_proj_scrape"
+output: html_document
+---
+Packages
+```{r}
+library(ggmap)
+library(googleway)
+library(dplyr)
+```
+
+API Key
+```{r}
+api_key <- '...' #fill in key here
+```
+
+Map Points 
+```{r}
+sg_points <- read.csv("./Data Files/Sg_points.csv")
+
+sg_points$long_lat <- lapply(1:nrow(sg_points), function(i) c(sg_points$Latitude[i], sg_points$Longitude[i]))
+```
+
+
+Single Scrape Code
+```{r}
+google_scrape_single_df <- function(type, api_key, lat_long){
+
+  single <- google_places(location=lat_long, place_type=type, key=api_key, radius=3400)
+  single_df <- single$results
+  
+  if (length(single_df) == 0){ 
+    # we use length here, since if it was empty, 'single' would've been an empty list, and single_df would've still been an empty list
+    
+    return (data.frame()) #return empty dataframe
+    
+  }else{
+    
+      while (nrow(single_df) < 60){
+      
+        next_token <- single$next_page_token #assign token to next page token
+        
+        Sys.sleep(2) #let system rest to allow extraction of data from page
+    
+        single_next <- google_places(location=lat_long, place_type=type, page_token=next_token, radius=3400, key=api_key)
+        
+        single_next_df <- single_next$results #get results
+          
+        single_df <- bind_rows(single_df, single_next_df) #bind next gas data to current gas data
+        #print(paste0("single df nrows: ", nrow(single_df)))
+        single <- single_next
+      }
+    
+      return (distinct(single_df))
+  }
+}
+```
+
+Multiple Scrape Code
+```{r}
+google_scrape_multiple_df <- function(type, api_key){
+  
+  final_df <- data.frame()
+  for (i in 1:nrow(sg_points)){
+  #for (i in 1:2){ - #uncomment this for testing
+    #we apply google_scrape_single to each long_lat found on each row of sg_points
+    df_to_bind <- google_scrape_single_df(type, api_key, sg_points$long_lat[[i]]) 
+    Sys.sleep(2) #allow system to sleep to ensure scraping carries on successfully
+    
+    final_df <- bind_rows(final_df, df_to_bind) #bind the new df to final_df
+    final_df <- distinct(final_df) #ensure only distinct rows are found
+    print(paste0("point number: ", i)) #print point number
+  }
+  return (final_df)
+}
+```
+
+Gas Data
+```{r}
+# old <- Sys.time() #start time
+# gas_df <- google_scrape_multiple_df("gas_station", api_key)
+# new <- Sys.time() - old #time difference
+# print(new) #print time difference
+# 
+# col_names <- c("geometry", "business_status", "name", "place_id", "plus_code", "vicinity", "rating", "permanently_closed") #relevant columns
+# 
+# gas_df <- gas_df[, col_names]
+# 
+# gas_df <- distinct(gas_df) #distinct results
+# 
+# write.csv(gas_df, "gas_stations.csv") #export into a csv file
+
+```
+
+Convenience Store
+```{r}
+old <- Sys.time() #start time
+convenience_store_df <- google_scrape_multiple_df("convenience_store", api_key)
+new <- Sys.time() - old #time difference
+print(new) #print time difference
+
+col_names <- c("geometry", "business_status", "name", "place_id", "plus_code", "vicinity", "rating", "permanently_closed") #relevant columns
+
+convenience_store_df <- convenience_store_df[, col_names]
+
+convenience_store_df <- distinct(convenience_store_df) #distinct results
+
+write.csv(convenience_store_df, "convenience_stores.csv") #export into a csv file
+
+```
+
+Cafe
+```{r}
+old <- Sys.time() #start time
+cafe_df <- google_scrape_multiple_df("cafe", api_key)
+new <- Sys.time() - old #time difference
+print(new) #print time difference
+
+col_names <- c("geometry", "business_status", "name", "place_id", "plus_code", "vicinity", "rating", "permanently_closed") #relevant columns
+
+cafe_df <- convenience_store_df[, col_names]
+
+cafe_df <- distinct(cafe_df) #distinct results
+
+write.csv(cafe_df, "cafe.csv") #export into a csv file
+
+```
+
+park
+```{r}
+old <- Sys.time() #start time
+park_df <- google_scrape_multiple_df("park", api_key)
+new <- Sys.time() - old #time difference
+print(new) #print time difference
+
+col_names <- c("geometry", "business_status", "name", "place_id", "plus_code", "vicinity", "rating", "permanently_closed") #relevant columns
+
+park_df <- park_df[, col_names]
+
+park_df <- distinct(park_df) #distinct results
+
+write.csv(park_df, "park.csv") #export into a csv file
+
+```
+
+tourist_attraction
+```{r}
+old <- Sys.time() #start time
+tourist_attraction_df <- google_scrape_multiple_df("tourist_attraction", api_key)
+new <- Sys.time() - old #time difference
+print(new) #print time difference
+
+col_names <- c("geometry", "business_status", "name", "place_id", "plus_code", "vicinity", "rating", "permanently_closed") #relevant columns
+
+tourist_attraction_df <- tourist_attraction_df[, col_names]
+
+tourist_attraction_df <- distinct(tourist_attraction_df) #distinct results
+
+write.csv(tourist_attraction_df, "tourist_attraction.csv") #export into a csv file
+
+```
+
+shopping_mall
+```{r}
+old <- Sys.time() #start time
+shopping_mall_df <- google_scrape_multiple_df("shopping_mall", api_key)
+new <- Sys.time() - old #time difference
+print(new) #print time difference
+
+col_names <- c("geometry", "business_status", "name", "place_id", "plus_code", "vicinity", "rating", "permanently_closed") #relevant columns
+
+shopping_mall_df <- shopping_mall_df[, col_names]
+
+shopping_mall_df <- distinct(shopping_mall_df) #distinct results
+
+write.csv(shopping_mall_df, "shopping_mall.csv") #export into a csv file
+
+```
+
+meal_takeaway
+```{r}
+old <- Sys.time() #start time
+meal_takeaway_df <- google_scrape_multiple_df("meal_takeaway", api_key)
+new <- Sys.time() - old #time difference
+print(new) #print time difference
+
+col_names <- c("geometry", "business_status", "name", "place_id", "plus_code", "vicinity", "rating", "permanently_closed") #relevant columns
+
+meal_takeaway_df <- meal_takeaway_df[, col_names]
+
+meal_takeaway_df <- distinct(meal_takeaway_df) #distinct results
+
+write.csv(meal_takeaway_df, "meal_takeaway.csv") #export into a csv file
+
+```
+
+shopping_mall
+```{r}
+old <- Sys.time() #start time
+shopping_mall_df <- google_scrape_multiple_df("shopping_mall", api_key)
+new <- Sys.time() - old #time difference
+print(new) #print time difference
+
+col_names <- c("geometry", "business_status", "name", "place_id", "plus_code", "vicinity", "rating", "permanently_closed") #relevant columns
+
+shopping_mall_df <- shopping_mall_df[, col_names]
+
+shopping_mall_df <- distinct(shopping_mall_df) #distinct results
+
+write.csv(shopping_mall_df, "shopping_mall.csv") #export into a csv file
+
+```
+
+train_station
+```{r}
+old <- Sys.time() #start time
+train_station_df <- google_scrape_multiple_df("train_station", api_key)
+new <- Sys.time() - old #time difference
+print(new) #print time difference
+
+col_names <- c("geometry", "business_status", "name", "place_id", "plus_code", "vicinity", "rating", "permanently_closed") #relevant columns
+
+train_station_df <- shopping_mall_df[, col_names]
+
+train_station_df <- distinct(shopping_mall_df) #distinct results
+
+write.csv(train_station_df, "train_station.csv") #export into a csv file
+
+```
+
+
+bus_station
+```{r}
+old <- Sys.time() #start time
+bus_station_df <- google_scrape_multiple_df("bus_station", api_key)
+new <- Sys.time() - old #time difference
+print(new) #print time difference
+
+colnames(bus_station_df)
+col_names <- c("geometry", "business_status", "name", "place_id", "plus_code", "vicinity", "rating", "plus_code") #relevant columns
+
+bus_station_df <- bus_station_df[, col_names]
+
+bus_station_df <- distinct(bus_station_df) #distinct results
+
+write.csv(bus_station_df, "bus_station.csv") #export into a csv file
+
+```
