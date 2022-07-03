@@ -1,5 +1,5 @@
-Project done for NUS module, Descriptive Analytics with R, in Spring 2022
-Done by: Han Qian Qian, Kueh Choon Hwa, Tan Ting Wei, Ammar Bin Hussein Bagharib
+Project done for NUS module, Descriptive Analytics with R, in Spring 2022\
+Done by: Han Qian Qian, Kueh Choon Hwa, Tan Ting Wei, Ammar Bin Hussein Bagharib\
 Supervised by: Professor Liu Qizhang
 
 This shinyapp uses the `geocode()` function in the R package `ggmap`, as well as other functions that require the Google Places API. In order for this to work on your computer, you will need to create an account on Google Cloud Platform and generate an API key to Google's Geocoding API.
